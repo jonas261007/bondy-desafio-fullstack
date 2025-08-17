@@ -21,7 +21,6 @@ export const resolvers = {
   },
   Mutation: {
     login: (_: any, { email, password }: { email: string; password: string }) => {
-      // Usuário de teste
       if (email === "teste@bondy.com" && password === "1234") {
         return { name: "Jonas Ramos", email };
       }

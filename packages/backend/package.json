@@ -4,7 +4,7 @@
   "description": "Backend",
   "main": "handler.ts",
   "scripts": {
-    "start": "NODE_ENV=local serverless offline --stage local",
+    "start": "cross-env NODE_ENV=local serverless offline --stage local",
     "eslint": "eslint ./src --ext .ts,.js",
     "eslint:fix": "npm run prettier-format && eslint ./src --ext .ts,.tsx --quiet --fix",
     "prettier-format": "prettier --write .",
@@ -16,6 +16,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.12",
+    "cross-env": "^10.0.0",
     "esbuild": "^0.21.3",
     "globals": "^15.3.0",
     "serverless": "^3.38.0",
