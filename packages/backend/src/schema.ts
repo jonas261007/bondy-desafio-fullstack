@@ -1,16 +1,41 @@
 import { gql } from 'graphql-tag';
-import { GraphQLResolveInfo } from 'graphql';
+import mongoose, { Schema, model } from 'mongoose';
 
-// Tipos GraphQL
 export const typeDefs = gql`
+  type Pet {
+    id: ID!
+    name: String!
+    age: Int
+    type: String
+  }
+
   type Query {
-    hello: String
+    pets: [Pet]
+  }
+
+  type Mutation {
+    addPet(name: String!, age: Int, type: String): Pet
   }
 `;
 
-// Resolvers
+// Modelo Mongoose
+const petSchema = new Schema({
+  name: String,
+  age: Number,
+  type: String,
+});
+
+const Pet = model('Pet', petSchema);
+
 export const resolvers = {
   Query: {
-    hello: () => 'Hello, Bondy!',
+    pets: async () => await Pet.find(),
+  },
+  Mutation: {
+    addPet: async (_: any, { name, age, type }: any) => {
+      const newPet = new Pet({ name, age, type });
+      await newPet.save();
+      return newPet;
+    },
   },
 };

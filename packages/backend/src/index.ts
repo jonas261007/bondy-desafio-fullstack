@@ -1,29 +1,18 @@
-import * as dotenv from 'dotenv';
+import 'dotenv/config';
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { typeDefs, resolvers } from './schema';
 import mongoose from 'mongoose';
 
-dotenv.config();
+const PORT = Number(process.env.PORT) || 4000;
 
-const PORT = parseInt(process.env.PORT || '4000', 10);
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/bondy';
+mongoose
+  .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bondy')
+  .then(() => console.log('✅ MongoDB conectado'))
+  .catch((err) => console.error('❌ Erro ao conectar MongoDB', err));
 
-async function startServer() {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log('✅ MongoDB conectado');
+const server = new ApolloServer({ typeDefs, resolvers });
 
-    const server = new ApolloServer({ typeDefs, resolvers });
-
-    const { url } = await startStandaloneServer(server, {
-      listen: { port: PORT },
-    });
-
-    console.log(`🚀 Server running at ${url}`);
-  } catch (err) {
-    console.error('Erro ao iniciar servidor:', err);
-  }
-}
-
-startServer();
+startStandaloneServer(server, { listen: { port: PORT } }).then(({ url }) => {
+  console.log(`🚀 Server running at ${url}`);
+});
