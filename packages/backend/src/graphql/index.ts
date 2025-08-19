@@ -2,7 +2,6 @@ import typeDefsIndex from '../typeDefs/index.js';
 import mutationDefs from '../typeDefs/mutation.js';
 import resolvers from '../graphql/resolvers/index.js';
 import { connection } from '../memoryDB/connection.js';
-
 import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginInlineTraceDisabled } from '@apollo/server/plugin/disabled';
 import { buildSubgraphSchema } from '@apollo/subgraph';
@@ -10,7 +9,10 @@ import type { APIGatewayProxyEvent, Context as LambdaContext } from 'aws-lambda'
 
 const { NODE_ENV = 'local' } = process.env;
 
-const typeDefs = [typeDefsIndex, mutationDefs];
+const typeDefs = [
+  ...(Array.isArray(typeDefsIndex) ? typeDefsIndex : [typeDefsIndex]),
+  ...(Array.isArray(mutationDefs) ? mutationDefs : [mutationDefs]),
+];
 
 const schema = buildSubgraphSchema({ typeDefs, resolvers });
 

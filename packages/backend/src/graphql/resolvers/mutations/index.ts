@@ -1,5 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql'
-import { mutationTest } from './mutationTest'
+import { mutationTest } from '../mutations/mutationTest.js'
 
 export default {
   mutationTest: (

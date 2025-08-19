@@ -1,0 +1,18 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Url {
+  id        Int      @id @default(autoincrement())
+  original  String
+  shortId   String   @unique
+  qrCode    String?
+  clicks    Int      @default(0)
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+}
