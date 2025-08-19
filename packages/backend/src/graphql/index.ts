@@ -1,19 +1,18 @@
-import typeDefs from '../typeDefs'
-import { ApolloServer } from '@apollo/server'
-import { ApolloServerPluginInlineTraceDisabled } from '@apollo/server/plugin/disabled'
-import {
-  handlers,
-  startServerAndCreateLambdaHandler,
-} from '@as-integrations/aws-lambda'
-import { buildSubgraphSchema } from '@apollo/subgraph'
-import resolvers from './resolvers'
-import { connection } from '../memoryDB/connection'
+import typeDefsIndex from '../typeDefs/index.js';
+import mutationDefs from '../typeDefs/mutation.js';
+import resolvers from '../graphql/resolvers/index.js';
+import { connection } from '../memoryDB/connection.js';
 
-const { NODE_ENV = 'local' } = process.env
+import { ApolloServer } from '@apollo/server';
+import { ApolloServerPluginInlineTraceDisabled } from '@apollo/server/plugin/disabled';
+import { buildSubgraphSchema } from '@apollo/subgraph';
+import type { APIGatewayProxyEvent, Context as LambdaContext } from 'aws-lambda';
 
-const schema = buildSubgraphSchema({ typeDefs, resolvers })
+const { NODE_ENV = 'local' } = process.env;
 
-const requestHandler = handlers.createAPIGatewayProxyEventRequestHandler()
+const typeDefs = [typeDefsIndex, mutationDefs];
+
+const schema = buildSubgraphSchema({ typeDefs, resolvers });
 
 const apolloServer = new ApolloServer({
   schema,
@@ -21,24 +20,20 @@ const apolloServer = new ApolloServer({
   includeStacktraceInErrorResponses: true,
   status400ForVariableCoercionErrors: true,
   introspection: true,
-})
+});
 
-const buildContext = startServerAndCreateLambdaHandler(
-  apolloServer,
-  requestHandler,
-  {
-    context: async ({ event, context }) => {
-      context.callbackWaitsForEmptyEventLoop = false
-      console.log(`Connected in ${NODE_ENV} environment`)
-      await connection()
-      return {
-        headers: event.headers,
-        functionName: context.functionName,
-        event,
-        context,
-      }
-    },
-  }
-)
+const buildContext = async (event: APIGatewayProxyEvent, context: LambdaContext) => {
+  context.callbackWaitsForEmptyEventLoop = false;
 
-export default buildContext
+  console.log(`Connected in ${NODE_ENV} environment`);
+  await connection();
+
+  return {
+    headers: event.headers,
+    functionName: context.functionName,
+    event,
+    context,
+  };
+};
+
+export { apolloServer, buildContext };

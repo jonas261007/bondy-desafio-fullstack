@@ -1,6 +1,10 @@
-import { connection } from '../../../memoryDB/connection'
-import { User } from '../../../models/User'
+import { GraphQLResolveInfo } from 'graphql';
 
-export const mutationTest = async (_parent, args, _context, _info) => {
-  return args.test
-}
+export const mutationTest = async (
+  _parent: any,
+  args: { test: string },
+  _context: any,
+  _info: GraphQLResolveInfo
+) => {
+  return args.test;
+};

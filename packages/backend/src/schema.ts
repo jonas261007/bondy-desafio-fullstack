@@ -1,41 +1,63 @@
 import { gql } from 'graphql-tag';
-import mongoose, { Schema, model } from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { UserModel } from './models/User.js';
 
 export const typeDefs = gql`
-  type Pet {
+  type User {
     id: ID!
+    email: String!
     name: String!
-    age: Int
-    type: String
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
   }
 
   type Query {
-    pets: [Pet]
+    users: [User!]!
   }
 
   type Mutation {
-    addPet(name: String!, age: Int, type: String): Pet
+    login(email: String!, password: String!): AuthPayload!
+    register(name: String!, email: String!, password: String!): AuthPayload!
   }
 `;
 
-// Modelo Mongoose
-const petSchema = new Schema({
-  name: String,
-  age: Number,
-  type: String,
-});
-
-const Pet = model('Pet', petSchema);
-
 export const resolvers = {
   Query: {
-    pets: async () => await Pet.find(),
+    users: async () => await UserModel.find(),
   },
   Mutation: {
-    addPet: async (_: any, { name, age, type }: any) => {
-      const newPet = new Pet({ name, age, type });
-      await newPet.save();
-      return newPet;
+    register: async (_: any, { name, email, password }: { name: string; email: string; password: string }) => {
+      const existing = await UserModel.findOne({ email });
+      if (existing) throw new Error('Usuário já existe');
+
+      const hashed = await bcrypt.hash(password, 8);
+      const user = new UserModel({ name, email, password: hashed });
+      await user.save();
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'supersecretkey', { expiresIn: '1h' });
+
+      return { token, user };
     },
+    login: async (_: any, { email, password }: { email: string; password: string }) => {
+  const user = await UserModel.findOne({ email });
+  if (!user) throw new Error('Usuário não encontrado');
+
+  if (!user.password) throw new Error('Senha não definida para este usuário');
+
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) throw new Error('Senha incorreta');
+
+  const token = jwt.sign(
+    { userId: user.id },
+    process.env.JWT_SECRET || 'supersecretkey',
+    { expiresIn: '1h' }
+  );
+
+  return { token, user };
+},
   },
 };

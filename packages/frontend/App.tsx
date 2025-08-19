@@ -10,7 +10,6 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
-// --- Configuração Apollo com Auth ---
 const httpLink = createHttpLink({
   uri: 'http://localhost:4000/',
 });
@@ -30,7 +29,6 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
-// --- Queries e Mutations ---
 const GET_USERS = gql`
   query GetUsers {
     users {
@@ -54,7 +52,6 @@ const LOGIN = gql`
   }
 `;
 
-// --- Componentes ---
 const UsersList = () => {
   const { data, loading, error, refetch } = useQuery(GET_USERS);
 
@@ -114,7 +111,6 @@ const LoginForm = ({ onLogin }: { onLogin: () => void }) => {
 const AppContent = () => {
   const [loggedIn, setLoggedIn] = useState(false);
 
-  // Mantém login ao recarregar a página
   useEffect(() => {
     if (localStorage.getItem('token')) {
       setLoggedIn(true);
